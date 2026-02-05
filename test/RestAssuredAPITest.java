@@ -3,6 +3,7 @@ import io.restassured.response.Response;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.text.MessageFormat;
 import java.util.*;
 
 import static io.restassured.RestAssured.given;
@@ -109,5 +110,23 @@ public class RestAssuredAPITest {
         Assertions.assertTrue(response.statusCode()==200);
         Assertions.assertTrue(response.jsonPath().get("id").equals(newDeviceId));
         Assertions.assertTrue(response.jsonPath().get("name").equals("Apple MacBook Pro 16 (Updated Name)"));
+    }
+
+    @Test
+    public void testDeleteObjectUsingDelete(){
+        RestAssured.baseURI = "https://api.restful-api.dev";
+        Device newDevice = new Device("","Apple MacBook Pro 16",new HashMap<>(Map.of("year", "2019","price", "2049.99","CPU model", "Intel Core i9","Hard disk size", "1 TB","color", "silver")));
+
+        // Creating new Device
+        Response response=given().contentType("application/json").body(newDevice).post("/objects");
+        Assertions.assertTrue(response.statusCode()==200);
+        Assertions.assertTrue(response.jsonPath().get("name").equals("Apple MacBook Pro 16"));
+
+        //Deleting the newly created Device Name
+        String newDeviceId = response.jsonPath().get("id");
+        response=given().pathParam("id", newDeviceId).delete("/objects/{id}");
+        Assertions.assertTrue(response.statusCode()==200);
+        String messageFormat =  MessageFormat.format(   "\"message\":\"Object with id = {0} has been deleted.\"",newDeviceId);
+        Assertions.assertTrue(response.asString().equals("{" + messageFormat +"}"));
     }
 }
