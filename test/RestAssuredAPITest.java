@@ -89,4 +89,25 @@ public class RestAssuredAPITest {
         Assertions.assertTrue(response.statusCode()==200);
         Assertions.assertTrue(response.jsonPath().get("id").equals(newDeviceId));
     }
+
+    @Test
+    public void testUpdateObjectPartiallyUsingPatch(){
+        RestAssured.baseURI = "https://api.restful-api.dev";
+        Device newDevice = new Device("","Apple MacBook Pro 16",new HashMap<>(Map.of("year", "2019","price", "2049.99","CPU model", "Intel Core i9","Hard disk size", "1 TB","color", "silver")));
+
+        // Creating new Device
+        Response response=given().contentType("application/json").body(newDevice).post("/objects");
+        Assertions.assertTrue(response.statusCode()==200);
+        Assertions.assertTrue(response.jsonPath().get("name").equals("Apple MacBook Pro 16"));
+
+        //Partially Updating Device Name
+        String newDeviceId = response.jsonPath().get("id");
+        String upatedName = "{\n" +
+                "   \"name\": \"Apple MacBook Pro 16 (Updated Name)\"\n" +
+                "}";
+        response=given().pathParam("id", newDeviceId).contentType("application/json").body(upatedName).patch("/objects/{id}");
+        Assertions.assertTrue(response.statusCode()==200);
+        Assertions.assertTrue(response.jsonPath().get("id").equals(newDeviceId));
+        Assertions.assertTrue(response.jsonPath().get("name").equals("Apple MacBook Pro 16 (Updated Name)"));
+    }
 }
