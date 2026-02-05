@@ -1,14 +1,9 @@
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import io.restassured.RestAssured;
-import io.restassured.common.mapper.TypeRef;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
-
 
 import static io.restassured.RestAssured.given;
 //import org.junit.jupiter.api.Test;
@@ -43,7 +38,6 @@ public class RestAssuredAPITest {
         RestAssured.baseURI = "https://api.restful-api.dev";
         Response response=given().when().get("/objects");
         System.out.println(response.statusCode());
-//        System.out.println(response.asString());
         Assertions.assertEquals(200, response.statusCode());
         System.out.println(    response.jsonPath().getList("id"));
         Device[] devices = response.as(Device[].class);
@@ -76,5 +70,23 @@ public class RestAssuredAPITest {
         Assertions.assertTrue(response.jsonPath().get("name").equals("Apple MacBook Pro 16"));
         response=given().pathParam("id",response.jsonPath().get("id")).when().get("/objects/{id}");
         Assertions.assertTrue(response.jsonPath().get("name").equals("Apple MacBook Pro 16"));
+    }
+
+    @Test
+    public void testUpdateObjectUsingPut(){
+        RestAssured.baseURI = "https://api.restful-api.dev";
+        Device newDevice = new Device("","Apple MacBook Pro 16",new HashMap<>(Map.of("year", "2019","price", "2049.99","CPU model", "Intel Core i9","Hard disk size", "1 TB","color", "silver")));
+
+        // Creating new Device
+        Response response=given().contentType("application/json").body(newDevice).post("/objects");
+        Assertions.assertTrue(response.statusCode()==200);
+        Assertions.assertTrue(response.jsonPath().get("name").equals("Apple MacBook Pro 16"));
+
+        //Updating new Device
+        String newDeviceId = response.jsonPath().get("id");
+        newDevice.setData(new HashMap<>(Map.of("year", "2019","price", "2500.99","CPU model", "Intel Core i9","Hard disk size", "1 TB","color", "silver")));
+        response=given().pathParam("id", newDeviceId).contentType("application/json").body(newDevice).put("/objects/{id}");
+        Assertions.assertTrue(response.statusCode()==200);
+        Assertions.assertTrue(response.jsonPath().get("id").equals(newDeviceId));
     }
 }
