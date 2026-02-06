@@ -1,6 +1,8 @@
+import io.qameta.allure.Description;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.text.MessageFormat;
@@ -11,6 +13,7 @@ import static io.restassured.RestAssured.given;
 
 
 public class RestAssuredAPITest {
+    private static String baseUri;
 
 //    @Test
 //    public void testGetBooksDetails() {
@@ -34,37 +37,35 @@ public class RestAssuredAPITest {
 ////        System.out.println(response.getBody().asString());
 //    }
 
+@BeforeAll
+public static void readConfig(){
+    baseUri = RestAssured.baseURI = "https://api.restful-api.dev";
+
+}
     @Test
     public void testGetAllObjects(){
-        RestAssured.baseURI = "https://api.restful-api.dev";
+
         Response response=given().when().get("/objects");
-        System.out.println(response.statusCode());
         Assertions.assertEquals(200, response.statusCode());
-        System.out.println(    response.jsonPath().getList("id"));
         Device[] devices = response.as(Device[].class);
-        for (Device device : devices) {
-            System.out.println(device.getId()+ " " + device.getName()+ " " + device.getData());
-        }
     }
 
     @Test
     public void testGetObjectByIdQueryParam(){
         List<String> ids = new ArrayList<>(Arrays.asList("1","3","7"));
-        RestAssured.baseURI = "https://api.restful-api.dev";
         Response response=given().queryParam("id",1).queryParam("id",3).queryParam("id",7).when().get("/objects");
         Assertions.assertTrue(response.jsonPath().getList("id").equals(ids));
     }
 
     @Test
     public void testGetObjectByIdPathParam(){
-        RestAssured.baseURI = "https://api.restful-api.dev";
+
         Response response=given().pathParam("id","1").when().get("/objects/{id}");
         Assertions.assertTrue(response.jsonPath().get("id").equals("1"));
     }
 
     @Test
     public void testAddObject(){
-        RestAssured.baseURI = "https://api.restful-api.dev";
         Device newDevice = new Device("","Apple MacBook Pro 16",new HashMap<>(Map.of("year","2019","price","1849.99","CPU model","Intel Core i9","Hard disk size","1 TB")));
         Response response=given().contentType("application/json").body(newDevice).post("/objects");
         Assertions.assertTrue(response.statusCode()==200);
@@ -74,8 +75,8 @@ public class RestAssuredAPITest {
     }
 
     @Test
+    @Description("Update device")
     public void testUpdateObjectUsingPut(){
-        RestAssured.baseURI = "https://api.restful-api.dev";
         Device newDevice = new Device("","Apple MacBook Pro 16",new HashMap<>(Map.of("year", "2019","price", "2049.99","CPU model", "Intel Core i9","Hard disk size", "1 TB","color", "silver")));
 
         // Creating new Device
@@ -93,7 +94,6 @@ public class RestAssuredAPITest {
 
     @Test
     public void testUpdateObjectPartiallyUsingPatch(){
-        RestAssured.baseURI = "https://api.restful-api.dev";
         Device newDevice = new Device("","Apple MacBook Pro 16",new HashMap<>(Map.of("year", "2019","price", "2049.99","CPU model", "Intel Core i9","Hard disk size", "1 TB","color", "silver")));
 
         // Creating new Device
@@ -114,7 +114,6 @@ public class RestAssuredAPITest {
 
     @Test
     public void testDeleteObjectUsingDelete(){
-        RestAssured.baseURI = "https://api.restful-api.dev";
         Device newDevice = new Device("","Apple MacBook Pro 16",new HashMap<>(Map.of("year", "2019","price", "2049.99","CPU model", "Intel Core i9","Hard disk size", "1 TB","color", "silver")));
 
         // Creating new Device

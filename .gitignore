@@ -25,6 +25,8 @@ bin/
 
 ### VS Code ###
 .vscode/
+.idea
+.allure
 target
 ### Mac OS ###
 .DS_Store
